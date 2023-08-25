@@ -3,7 +3,7 @@ import express from "express";
 // import bcryptjs from "bcryptjs";
 // import jwt from "jsonwebtoken";
 // import authConfig from "../config/auth.json" assert { type: "json" };
-import authMiddlewares from "../middlewares/auth.js";
+import authMiddlewares from "../../middlewares/auth.js";
 
 import Project from "../model/project.js"
 import Task from "../model/task.js"

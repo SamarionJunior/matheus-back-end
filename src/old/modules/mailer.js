@@ -3,7 +3,7 @@ import path from "path";
 import nodemailer from "nodemailer"
 import hbs from "nodemailer-express-handlebars";
 
-import mailConfig from "../config/mail.json" assert {type: "json"}
+import mailConfig from "../../config/mail.json" assert {type: "json"}
 
 const { host, port, user, pass } = mailConfig
 

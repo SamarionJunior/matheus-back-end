@@ -2,9 +2,9 @@ import express from "express";
 import User from "../model/user.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import authConfig from "../../config/auth.json" assert { type: "json" };
+import authConfig from "../../../config/auth.json" assert { type: "json" };
 import crypto from "crypto";
-import mailer from "../../modules/mailer.js"
+import mailer from "../../../modules/mailer.js"
 
 const router = express.Router();
 

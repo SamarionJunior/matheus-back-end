@@ -21,18 +21,6 @@ export default (req, res, next) => {
         console.log("oi")
         return res.status(401).send({error: "Token malformatted"});
     }
-    
-    // jwt.verify(token, authConfig.secret, (err, decoded) => {
-    //     if(err){
-    //         console.log("oi")
-    //         return res.status(401).send({error: "Token invalid"});
-    //     }
-
-    //     req.userId = decoded.id 
-
-    //     console.log("oi1")
-    //     return next()
-    // })
  
     try {
 

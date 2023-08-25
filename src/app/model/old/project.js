@@ -1,4 +1,4 @@
-import mongoose from "../../database/index.js";
+import mongoose from "../../../database/index.js";
 
 const ProjectSchema = new mongoose.Schema({
     title: {
