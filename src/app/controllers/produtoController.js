@@ -54,15 +54,75 @@ router.post("/", async (req, res) => {
     }
 })
 
-router.put("/:produtoId", async (req, res) => {
+// router.put("/", async (req, res) => {
 
-    const {nome, preco, quantidade} = req.body;
+//     const {nome, preco, quantidade} = req.body;
+
+//     try{
+
+//         const produto = await Produto.findByIdAndUpdate(req.params.produtoId, {nome, preco, quantidade}, {new: true});
+        
+//         return res.send({produto});
+
+//     }catch(error){
+
+//         console.log(error);
+
+//         return res.status(400).send({erro: "Error updating produto"})
+
+//     }
+// })
+
+// router.put("/:produtoId", async (req, res) => {
+
+//     const {nome, preco, quantidade} = req.body;
+
+//     try{
+
+//         const produto = await Produto.findByIdAndUpdate(req.params.produtoId, {nome, preco, quantidade}, {new: true});
+        
+//         return res.send({produto});
+
+//     }catch(error){
+
+//         console.log(error);
+
+//         return res.status(400).send({erro: "Error updating produto"})
+
+//     }
+// })
+
+router.put("/all/", async (req, res) => {
+
+    // const {nome, preco, quantidade} = req.body;
 
     try{
 
-        const produto = await Produto.findByIdAndUpdate(req.params.produtoId, {nome, preco, quantidade}, {new: true});
+        // console.log(req.body)
+
+        const listProductsFromClientSide = req.body
+
+        if(listProductsFromClientSide){
+
+            await Produto.deleteMany();
+    
+            await Promise.all(listProductsFromClientSide.map(async (product) => {
+
+                const {nome, preco, quantidade} = product;
+
+                const auxProduct = new Produto({nome, preco, quantidade})
+
+                await auxProduct.save()
+
+            }))
+            
+            const products = await Produto.find();
         
-        return res.send({produto});
+            return res.send(products);
+
+        }
+        
+        return res.send(listProductsFromClientSide);
 
     }catch(error){
 
