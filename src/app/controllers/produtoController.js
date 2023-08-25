@@ -4,6 +4,13 @@ import Produto from "../model/produto.js"
 
 const router = express.Router();
 
+router.use((_req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', '*');
+  
+    next();
+  });
+
 router.get("/", async (req, res) => {
     try{
 
