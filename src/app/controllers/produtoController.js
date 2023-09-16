@@ -5,9 +5,9 @@ import Produto from "../model/produto.js"
 const router = express.Router();
 
 router.use((_req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', '*');
-  
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS");
     next();
   });
 
@@ -138,6 +138,81 @@ router.put("/all/", async (req, res) => {
         return res.status(400).send({erro: "Error updating produto"})
 
     }
+})
+
+router.put("/shoppingcar/add/:produtoId", async (req, res) => {
+
+    // const {nome, preco, quantidade} = req.body;
+
+    try{
+
+        const produtoId = req.params.produtoId;
+
+        // const auxProduct = new Produto({nome, preco, quantidade})
+
+        // await auxProduct.save()
+
+        const produto = await Produto.findById(produtoId);
+
+        if(produto.quantidade > 0){
+
+            produto.quantidade--
+    
+            produto.noCarrinho++
+            
+        }
+
+        await produto.save()
+
+        const products = await Produto.find();
+
+        console.log(products)
+
+        return res.send({products});
+
+    }catch(error){
+
+        console.log(error);
+
+        return res.status(400).send({erro: "Error updating produto"})
+
+    }
+
+    // try{
+
+    //     // console.log(req.body)
+
+    //     const listProductsFromClientSide = req.body
+
+    //     if(listProductsFromClientSide){
+
+    //         await Produto.deleteMany();
+    
+    //         await Promise.all(listProductsFromClientSide.map(async (product) => {
+
+    //             const {nome, preco, quantidade} = product;
+
+    //             const auxProduct = new Produto({nome, preco, quantidade})
+
+    //             await auxProduct.save()
+
+    //         }))
+            
+    //         const products = await Produto.find();
+        
+    //         return res.send(products);
+
+    //     }
+        
+    //     return res.send(listProductsFromClientSide);
+
+    // }catch(error){
+
+    //     console.log(error);
+
+    //     return res.status(400).send({erro: "Error updating produto"})
+
+    // }
 })
 
 router.delete("/:produtoId", async (req, res) => {
