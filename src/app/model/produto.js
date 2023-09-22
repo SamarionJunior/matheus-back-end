@@ -1,7 +1,7 @@
 import mongoose from "../../database/index.js";
 
 
-const ProdutoSchema = new mongoose.Schema({
+const ProductSchema = new mongoose.Schema({
     nome: {
         type: String,
         require: true,
@@ -42,8 +42,8 @@ const ProdutoSchema = new mongoose.Schema({
         require: true,
         default: "Em Produção",
     }
-}, { collection : 'Produto' });
+}, { collection : 'Product' });
 
-const Produto = mongoose.model('Produto', ProdutoSchema);
+const Product = mongoose.model('Product', ProductSchema);
 
-export default Produto;
+export default Product;

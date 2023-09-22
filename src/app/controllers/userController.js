@@ -26,19 +26,69 @@ async function getUserId(){
     return global.userId
 }
 
-router.use((_req, res, next) => {
-    // _req.userId = getUserId()
-    next();
-});
+// router.use((_req, res, next) => {
+//     // _req.userId = getUserId()
+//     next();
+// });
 
 router.get("/", async (req, res) => {
     try{
-        const products = await Produto.find();
-        return res.send({products});
+        const users = await User.find();
+        return res.send({users});
     }catch(error){
         return Erro(error, "Error loading  produto");
     }
 })
+
+router.post("/", async (req, res) => {
+    try{
+        const {name, email, password} = req.body;
+
+        const user = await User.create({name, email, password});
+        
+        await user.save()
+        
+        const users = await User.find();
+        return res.send({users});
+    }catch(error){
+        console.log(error);
+        return res.status(400).send({erro: "Error creating new produto"})
+
+    }
+})
+
+router.put("/:userId", async (req, res) => {
+    try{
+        const userId = req.params.userId;
+        
+        const {name, email, password} = req.body;
+
+        const user = await User.findByIdAndUpdate(userId, {name, email, password});
+        
+        const users = await User.find();
+        return res.send({users});
+    }catch(error){
+        console.log(error);
+        return res.status(400).send({erro: "Error creating new produto"})
+
+    }
+})
+
+router.delete("/:userId", async (req, res) => {
+    try{
+        const userId = req.params.userId;
+
+        const user = await User.findByIdAndRemove(userId);
+        
+        const users = await User.find();
+        return res.send({users});
+    }catch(error){
+        console.log(error);
+        return res.status(400).send({erro: "Error creating new produto"})
+
+    }
+})
+
 
 // SHOPPING CAR
 
@@ -206,52 +256,4 @@ router.put("/orders/status/:produtoId", async (req, res) => {
 })
 
 // PRODUCTS LIST
-
-router.post("/", async (req, res) => {
-    try{
-        const {nome, preco, quantidade} = req.body;
-
-        const produto = await Produto.create({nome, preco, quantidade});
-        await produto.save()
-        
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error creating new produto"})
-
-    }
-})
-
-router.put("/:produtoId", async (req, res) => {
-    try{
-        const produtoId = req.params.produtoId;
-        const {nome, preco, quantidade} = req.body;
-
-        const produto = await Produto.findByIdAndUpdate(produtoId, {nome, preco, quantidade});
-        
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error creating new produto"})
-
-    }
-})
-
-router.delete("/:produtoId", async (req, res) => {
-    try{
-        const produtoId = req.params.produtoId;
-
-        const produto = await Produto.findByIdAndRemove(produtoId);
-        
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error creating new produto"})
-
-    }
-})
-
-export default app => app.use("/produto", router);
+export default app => app.use("/user", router);
