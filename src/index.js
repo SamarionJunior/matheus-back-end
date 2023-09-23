@@ -9,12 +9,12 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 
 import produtoController from "./app/controllers/produtoController.js"
-
 import userController from "./app/controllers/userController.js"
+import shoppingcarController from "./app/controllers/shoppingcarController.js"
 
 produtoController(app)
-
 userController(app)
+shoppingcarController(app)
 
 app.listen(PORT)
 

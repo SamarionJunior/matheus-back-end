@@ -1,15 +1,10 @@
 import express from "express";
 
-import User from "../model/user.js";
-import Produto from "../model/produto.js"
-
-import ShoppingCar from "../model/shoppingcar.js";
-import PaymentArea from "../model/paymentarea.js";
-import Order from "../model/order.js";
-
-import Orders from "../model/orders.js";
+import Product from "../model/product.js"
 
 import { Erro } from "./function.js";
+
+const textController = "Product"
 
 const router = express.Router();
 
@@ -20,238 +15,141 @@ router.use((_req, res, next) => {
     next();
 });
 
-async function getUserId(){
-    if(global.userId !== undefined)
-        global.userId = await User.find()[0]._id;
-    return global.userId
-}
-
-router.use((_req, res, next) => {
-    // _req.userId = getUserId()
-    next();
-});
+// GET
 
 router.get("/", async (req, res) => {
     try{
-        const products = await Produto.find();
+        const products = await Product.find();
         return res.send({products});
     }catch(error){
-        return Erro(error, "Error loading  produto");
+        return Erro(error, "Error getting all " + textController);
     }
 })
 
-// SHOPPING CAR
-
-router.put("/shoppingcar/add/:produtoId", async (req, res) => {
+router.get("/:productId", async (req, res) => {
     try{
-        const produtoId = req.params.produtoId;
-        const produto = await Produto.findById(produtoId);
-        if(produto.quantidade > 0){
-            produto.quantidade--;
-            produto.noCarrinho++;
-        }
-        await produto.save();
-        const products = await Produto.find();
-        return res.send({products});
+        const productId = req.params.productId;
+
+        const product = await Product.findById(productId);
+        return res.send({product});
     }catch(error){
-        return Erro(error, "Error updating produto");
+        return Erro(error, "Error getting " + textController + " by id");
     }
 })
 
-router.put("/shoppingcar/remove/:produtoId", async (req, res) => {
-    try{
-        const produtoId = req.params.produtoId;
-        const produto = await Produto.findById(produtoId);
-        if(produto.noCarrinho > 0){
-            produto.quantidade++;
-            produto.noCarrinho--;
-        }
-        await produto.save();
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-router.put("/shoppingcar/delete/all", async (req, res) => {
-    try{
-        const produtos = await Produto.find();
-
-        const listIdProducts = produtos.filter(produto => produto.noCarrinho > 0 ?? produto._id);
-
-        await Promise.all(listIdProducts.map(async IdProduct => {
-            const auxProduto = await Produto.findById(IdProduct)
-            auxProduto.quantidade += auxProduto.noCarrinho;
-            auxProduto.noCarrinho = 0;
-            await auxProduto.save()
-        }))
-
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-router.put("/shoppingcar/delete/:produtoId", async (req, res) => {
-    try{
-        const produtoId = req.params.produtoId;
-        console.log(produtoId)
-        const produto = await Produto.findById(produtoId);
-        if(produto.noCarrinho > 0){
-            produto.quantidade += produto.noCarrinho;
-            produto.noCarrinho = 0;
-        }
-        await produto.save();
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-// PAYMENT AREA
-
-router.put("/paymentarea/add/all", async (req, res) => {
-    try{
-        const produtos = await Produto.find();
-        
-        const listIdProducts = produtos.filter(produto => produto.noCarrinho > 0 ?? produto._id);
-
-        await Promise.all(listIdProducts.map(async IdProduct => {
-            const auxProduto = await Produto.findById(IdProduct)
-            auxProduto.emProcessoDePagamento += auxProduto.noCarrinho
-            auxProduto.noCarrinho = 0
-            await auxProduto.save()
-        }))
-
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-router.put("/paymentarea/remove/all", async (req, res) => {
-    try{
-        const produtos = await Produto.find();
-        
-        const listIdProducts = produtos.filter(produto => produto.emProcessoDePagamento > 0 ?? produto._id);
-
-        await Promise.all(listIdProducts.map(async IdProduct => {
-            const auxProduto = await Produto.findById(IdProduct)
-            auxProduto.noCarrinho = auxProduto.emProcessoDePagamento
-            auxProduto.emProcessoDePagamento = 0
-            await auxProduto.save()
-        }))
-
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-// ORDERS
-
-router.put("/orders/add/all", async (req, res) => {
-    try{
-        const produtos = await Produto.find();
-        
-        const listIdProducts = produtos.filter(produto => produto.emProcessoDePagamento > 0 ?? produto._id);
-
-        await Promise.all(listIdProducts.map(async IdProduct => {
-            const auxProduto = await Produto.findById(IdProduct)
-            auxProduto.NosPedidos += auxProduto.emProcessoDePagamento
-            auxProduto.emProcessoDePagamento = 0
-            await auxProduto.save()
-        }))
-
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-router.put("/orders/status/:produtoId", async (req, res) => {
-    try{
-        const produtoId = req.params.produtoId;
-        const {status} = req.body;
-
-        console.log(produtoId, status)
-
-        const produto = await Produto.findById(produtoId);
-        
-        produto.status = status;
-
-        await produto.save();
-
-        const products = await Produto.find();
-
-        console.log(products.filter(p => p.NosPedidos > 0)[0].status)
-
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-// PRODUCTS LIST
+// POST
 
 router.post("/", async (req, res) => {
     try{
         const {nome, preco, quantidade} = req.body;
 
-        const produto = await Produto.create({nome, preco, quantidade});
-        await produto.save()
+        const product = await Product.create({nome, preco, quantidade});
         
-        const products = await Produto.find();
+        await product.save()
+        
+        const products = await Product.find();
         return res.send({products});
     }catch(error){
         console.log(error);
-        return res.status(400).send({erro: "Error creating new produto"})
+        return Erro(error, "Error posting all " + textController);
 
     }
 })
 
-router.put("/:produtoId", async (req, res) => {
+router.post("/all", async (req, res) => {
     try{
-        const produtoId = req.params.produtoId;
+
+        const productsFromClientSide = req.body;
+
+        await Promise.all(productsFromClientSide.map(async productFromClientSide => {
+            const {nome, preco, quantidade} = productFromClientSide;
+
+            const product = await Product.create({nome, preco, quantidade});
+        
+            await product.save()
+        }))
+        
+        const products = await Product.find();
+        return res.send({products});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error posting " + textController + " by id");
+
+    }
+})
+
+// PUT
+
+router.put("/", async (req, res) => {
+    try{
+
+        const productsFromClientSide = req.body;
+
+        await Promise.all(productsFromClientSide.map(async productFromClientSide => {
+
+            const {id, nome, preco, quantidade} = productFromClientSide;
+
+            const product = await Product.findByIdAndUpdate(id, {nome, preco, quantidade});
+        
+            await product.save()
+        }))
+        
+        const products = await Product.find();
+        return res.send({products});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error updating all " + textController);
+
+    }
+})
+
+router.put("/:productId", async (req, res) => {
+    try{
+        const productId = req.params.productId;
+        
         const {nome, preco, quantidade} = req.body;
 
-        const produto = await Produto.findByIdAndUpdate(produtoId, {nome, preco, quantidade});
+        const product = await Product.findByIdAndUpdate(productId, {nome, preco, quantidade});
         
-        const products = await Produto.find();
+        const products = await Product.find();
         return res.send({products});
     }catch(error){
         console.log(error);
-        return res.status(400).send({erro: "Error creating new produto"})
+        return Erro(error, "Error updating " + textController + " by id");
 
     }
 })
 
-router.delete("/:produtoId", async (req, res) => {
+// DELETE
+
+router.delete("/", async (req, res) => {
     try{
-        const produtoId = req.params.produtoId;
 
-        const produto = await Produto.findByIdAndRemove(produtoId);
+        const product = await Product.deleteMany({});
         
-        const products = await Produto.find();
+        const products = await Product.find();
         return res.send({products});
     }catch(error){
         console.log(error);
-        return res.status(400).send({erro: "Error creating new produto"})
+        return Erro(error, "Error deleting all " + textController);
 
     }
 })
 
-export default app => app.use("/produto", router);
+router.delete("/:productId", async (req, res) => {
+    try{
+        const productId = req.params.productId;
+
+        const product = await Product.findByIdAndRemove(productId);
+        
+        const products = await Product.find();
+        return res.send({products});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error deleting " + textController + " by id");
+
+    }
+})
+
+// PRODUCTS LIST
+export default app => app.use("/product", router);

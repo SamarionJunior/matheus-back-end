@@ -1,7 +1,7 @@
 import express from "express";
 
 import User from "../model/user.js";
-import Produto from "../model/produto.js"
+import Product from "../model/product.js"
 
 import ShoppingCar from "../model/shoppingcar.js";
 import PaymentArea from "../model/paymentarea.js";
@@ -10,6 +10,8 @@ import Order from "../model/order.js";
 import Orders from "../model/orders.js";
 
 import { Erro } from "./function.js";
+
+const textController = "User"
 
 const router = express.Router();
 
@@ -31,14 +33,29 @@ async function getUserId(){
 //     next();
 // });
 
+// GET
+
 router.get("/", async (req, res) => {
     try{
         const users = await User.find();
         return res.send({users});
     }catch(error){
-        return Erro(error, "Error loading  produto");
+        return Erro(error, "Error getting all " + textController);
     }
 })
+
+router.get("/:userId", async (req, res) => {
+    try{
+        const userId = req.params.userId;
+
+        const user = await User.findById(userId);
+        return res.send({user});
+    }catch(error){
+        return Erro(error, "Error getting " + textController + " by id");
+    }
+})
+
+// POST
 
 router.post("/", async (req, res) => {
     try{
@@ -52,7 +69,54 @@ router.post("/", async (req, res) => {
         return res.send({users});
     }catch(error){
         console.log(error);
-        return res.status(400).send({erro: "Error creating new produto"})
+        return Erro(error, "Error posting all " + textController);
+
+    }
+})
+
+router.post("/all", async (req, res) => {
+    try{
+
+        const usersFromClientSide = req.body;
+
+        await Promise.all(usersFromClientSide.map(async userFromClientSide => {
+            const {name, email, password} = userFromClientSide;
+
+            const user = await User.create({name, email, password});
+        
+            await user.save()
+        }))
+        
+        const users = await User.find();
+        return res.send({users});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error posting " + textController + " by id");
+
+    }
+})
+
+// PUT
+
+router.put("/", async (req, res) => {
+    try{
+
+        const usersFromClientSide = req.body;
+
+        await Promise.all(usersFromClientSide.map(async userFromClientSide => {
+
+            const {id, name, email, password} = userFromClientSide;
+
+            const user = await User.findByIdAndUpdate(id, {name, email, password});
+        
+            await user.save()
+        }))
+        
+        const users = await User.find();
+        return res.send({users});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error updating all " + textController);
 
     }
 })
@@ -69,7 +133,23 @@ router.put("/:userId", async (req, res) => {
         return res.send({users});
     }catch(error){
         console.log(error);
-        return res.status(400).send({erro: "Error creating new produto"})
+        return Erro(error, "Error updating " + textController + " by id");
+
+    }
+})
+
+// DELETE
+
+router.delete("/", async (req, res) => {
+    try{
+
+        const user = await User.deleteMany({});
+        
+        const users = await User.find();
+        return res.send({users});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error deleting all " + textController);
 
     }
 })
@@ -84,174 +164,8 @@ router.delete("/:userId", async (req, res) => {
         return res.send({users});
     }catch(error){
         console.log(error);
-        return res.status(400).send({erro: "Error creating new produto"})
+        return Erro(error, "Error deleting " + textController + " by id");
 
-    }
-})
-
-
-// SHOPPING CAR
-
-router.put("/shoppingcar/add/:produtoId", async (req, res) => {
-    try{
-        const produtoId = req.params.produtoId;
-        const produto = await Produto.findById(produtoId);
-        if(produto.quantidade > 0){
-            produto.quantidade--;
-            produto.noCarrinho++;
-        }
-        await produto.save();
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        return Erro(error, "Error updating produto");
-    }
-})
-
-router.put("/shoppingcar/remove/:produtoId", async (req, res) => {
-    try{
-        const produtoId = req.params.produtoId;
-        const produto = await Produto.findById(produtoId);
-        if(produto.noCarrinho > 0){
-            produto.quantidade++;
-            produto.noCarrinho--;
-        }
-        await produto.save();
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-router.put("/shoppingcar/delete/all", async (req, res) => {
-    try{
-        const produtos = await Produto.find();
-
-        const listIdProducts = produtos.filter(produto => produto.noCarrinho > 0 ?? produto._id);
-
-        await Promise.all(listIdProducts.map(async IdProduct => {
-            const auxProduto = await Produto.findById(IdProduct)
-            auxProduto.quantidade += auxProduto.noCarrinho;
-            auxProduto.noCarrinho = 0;
-            await auxProduto.save()
-        }))
-
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-router.put("/shoppingcar/delete/:produtoId", async (req, res) => {
-    try{
-        const produtoId = req.params.produtoId;
-        console.log(produtoId)
-        const produto = await Produto.findById(produtoId);
-        if(produto.noCarrinho > 0){
-            produto.quantidade += produto.noCarrinho;
-            produto.noCarrinho = 0;
-        }
-        await produto.save();
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-// PAYMENT AREA
-
-router.put("/paymentarea/add/all", async (req, res) => {
-    try{
-        const produtos = await Produto.find();
-        
-        const listIdProducts = produtos.filter(produto => produto.noCarrinho > 0 ?? produto._id);
-
-        await Promise.all(listIdProducts.map(async IdProduct => {
-            const auxProduto = await Produto.findById(IdProduct)
-            auxProduto.emProcessoDePagamento += auxProduto.noCarrinho
-            auxProduto.noCarrinho = 0
-            await auxProduto.save()
-        }))
-
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-router.put("/paymentarea/remove/all", async (req, res) => {
-    try{
-        const produtos = await Produto.find();
-        
-        const listIdProducts = produtos.filter(produto => produto.emProcessoDePagamento > 0 ?? produto._id);
-
-        await Promise.all(listIdProducts.map(async IdProduct => {
-            const auxProduto = await Produto.findById(IdProduct)
-            auxProduto.noCarrinho = auxProduto.emProcessoDePagamento
-            auxProduto.emProcessoDePagamento = 0
-            await auxProduto.save()
-        }))
-
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-// ORDERS
-
-router.put("/orders/add/all", async (req, res) => {
-    try{
-        const produtos = await Produto.find();
-        
-        const listIdProducts = produtos.filter(produto => produto.emProcessoDePagamento > 0 ?? produto._id);
-
-        await Promise.all(listIdProducts.map(async IdProduct => {
-            const auxProduto = await Produto.findById(IdProduct)
-            auxProduto.NosPedidos += auxProduto.emProcessoDePagamento
-            auxProduto.emProcessoDePagamento = 0
-            await auxProduto.save()
-        }))
-
-        const products = await Produto.find();
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
-    }
-})
-
-router.put("/orders/status/:produtoId", async (req, res) => {
-    try{
-        const produtoId = req.params.produtoId;
-        const {status} = req.body;
-
-        console.log(produtoId, status)
-
-        const produto = await Produto.findById(produtoId);
-        
-        produto.status = status;
-
-        await produto.save();
-
-        const products = await Produto.find();
-
-        console.log(products.filter(p => p.NosPedidos > 0)[0].status)
-
-        return res.send({products});
-    }catch(error){
-        console.log(error);
-        return res.status(400).send({erro: "Error updating produto"});
     }
 })
 
