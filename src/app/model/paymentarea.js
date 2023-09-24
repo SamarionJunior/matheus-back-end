@@ -7,6 +7,10 @@ const PaymentAreaSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+    },
     quantidade: {
         type: Number,
         require: true,

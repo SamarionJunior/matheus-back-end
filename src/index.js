@@ -1,6 +1,8 @@
 import express from "express"
 import bodyParser from "body-parser"
 
+// console.clear()
+
 const PORT = 3030
 
 const app = express()
@@ -11,10 +13,12 @@ app.use(bodyParser.urlencoded({extended: false}))
 import produtoController from "./app/controllers/produtoController.js"
 import userController from "./app/controllers/userController.js"
 import shoppingcarController from "./app/controllers/shoppingcarController.js"
+import paymentAreaController from "./app/controllers/paymentAreaController.js"
 
 produtoController(app)
 userController(app)
 shoppingcarController(app)
+paymentAreaController(app)
 
 app.listen(PORT)
 

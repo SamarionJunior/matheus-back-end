@@ -159,19 +159,21 @@ router.post("/:productId", async (req, res) => {
 router.put("/remove/:productId", async (req, res) => {
     try{
         const productId = req.params.productId;
-        const userId = req.params.userId;
+        const userId = req.userId;
 
         const itemInCar = await ShoppingCar.findOne({userId: userId, productId: productId});
+        
+        if(product){
+            if(itemInCar.quantidade > 0){
 
-        if(itemInCar.quantidade > 0){
-
-            const product = await ShoppingCar.findById(productId);
-    
-            itemInCar.quantidade--;
-            product.quantidade++;
-    
-            await itemInCar.save();
-            await product.save();
+                const product = await Product.findById(productId);
+        
+                itemInCar.quantidade--;
+                product.quantidade++;
+        
+                await itemInCar.save();
+                await product.save();
+            }
         }
 
         if(itemInCar.quantidade === 0){
@@ -188,18 +190,21 @@ router.put("/remove/:productId", async (req, res) => {
 router.put("/add/:productId", async (req, res) => {
     try{
         const productId = req.params.productId;
-        const userId = req.params.userId;
+        const userId = req.userId;
 
-        const product = await ShoppingCar.findById(productId);
+        const product = await Product.findById(productId);
 
-        if(product.quantidade > 0){
-            const itemInCar = await ShoppingCar.findOne({userId: userId, productId: productId});
+        if(product){
+            if(product.quantidade > 0){
     
-            itemInCar.quantidade++;
-            product.quantidade--;
-    
-            await itemInCar.save();
-            await product.save();
+                const itemInCar = await ShoppingCar.findOne({userId: userId, productId: productId});
+        
+                itemInCar.quantidade++;
+                product.quantidade--;
+        
+                await itemInCar.save();
+                await product.save();
+            }
         }
         
         const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
