@@ -32,7 +32,8 @@ router.use(async (_req, res, next) => {
 
 router.get("/", async (req, res) => {
     try{
-        const productsInPaymentarea = await PaymentArea.find().populate('userId').populate('productId');
+        const productsInPaymentarea = await PaymentArea.find()
+        // .populate('userId').populate('productId');
         return res.send({productsInPaymentarea});
     }catch(error){
         return Erro(error, "Error getting all " + textController);
@@ -78,36 +79,75 @@ router.post("/", async (req, res) => {
     }
 })
 
+// PUT
+
+router.put("/reset", async (req, res) => {
+    try{
+        const userId = req.userId;
+        const productsFromShoppingCar = await ShoppingCar.find();
+
+        await Promise.all(productsFromShoppingCar.map(async productFromShoppingCar => {
+            const productId = productFromShoppingCar.productId.toString();
+            
+            const itemFromPaymentArea = await PaymentArea.findOne({userId: userId, productId: productId});
+    
+            if(itemFromPaymentArea !== null){
+                itemFromPaymentArea.quantidade += productFromShoppingCar.quantidade;
+                await ShoppingCar.deleteMany({userId: userId, productId: productId});
+                await itemFromPaymentArea.save()
+            }else{
+                const paymentarea = await PaymentArea.create({userId: userId, productId: productId, quantidade: productFromShoppingCar.quantidade});
+                await ShoppingCar.deleteMany({userId: userId, productId: productId});
+                await paymentarea.save()
+            }
+        }))
+        
+        const paymentareas = await PaymentArea.find()
+        // .populate('userId').populate('productId');
+        return res.send({paymentareas});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error updating all " + textController);
+    }
+})
+
 // DELETE
 
 router.delete("/", async (req, res) => {
     try{
-        
         const userId = req.userId;
-        
-        const productsInPaymentArea = await ShoppingPaymentAreaCar.find({userId: userId});
+        const productsFromPaymentArea = await PaymentArea.find();
 
-        await Promise.all(productsInPaymentArea.map(async productInPaymentArea => {
+        await Promise.all(productsFromPaymentArea.map(async productFromPaymentArea => {
+            const productId = productFromPaymentArea.productId.toString();
             
-            const itemInPaymentArea = await PaymentArea.findOne({userId: userId, productId: id});
-            
-            if(itemInPaymentArea !== null){
-                if(productInPaymentArea !== null){
-                    if(itemInPaymentArea.quantidade > 0){
-                        await PaymentArea.deleteMany({_id: itemInPaymentArea._id.toString()});
-                        productInPaymentArea.quantidade += itemInPaymentArea.quantidade;
-                        await itemInPaymentArea.save()
-                    }
-                }else{
-                    if(itemInPaymentArea.quantidade > 0){
-                        await PaymentArea.deleteMany({_id: itemInPaymentArea._id.toString()});
-                        const itemInShoppingCAr = await ShoppingCar.create({userId: userId, productId: id, quantidade: itemInPaymentArea.quantidade});
-                        await itemInShoppingCAr.save()
-                    }
-                }
-
+            const itemFromShoppingCar = await ShoppingCar.findOne({userId: userId, productId: productId});
+    
+            if(itemFromShoppingCar !== null){
+                itemFromShoppingCar.quantidade += productFromPaymentArea.quantidade;
+                await PaymentArea.deleteMany({userId: userId, productId: productId});
+                await itemFromShoppingCar.save()
+            }else{
+                const shoppingcar = await ShoppingCar.create({userId: userId, productId: productId, quantidade: productFromPaymentArea.quantidade});
+                await PaymentArea.deleteMany({userId: userId, productId: productId});
+                await shoppingcar.save()
             }
         }))
+        
+        const paymentareas = await PaymentArea.find()
+        // .populate('userId').populate('productId');
+        return res.send({paymentareas});
+    }catch(error){
+        return Erro(error, "Error deleting all " + textController);
+    }
+})
+
+router.delete("/all", async (req, res) => {
+    try{
+        
+        const userId = req.userId;
+
+        await PaymentArea.deleteMany({userId: userId});
         
         const itemsInPaymentArea = await PaymentArea.find().populate('userId').populate('productId');
         return res.send({itemsInPaymentArea});

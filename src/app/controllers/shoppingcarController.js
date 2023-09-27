@@ -156,6 +156,73 @@ router.post("/:productId", async (req, res) => {
 
 // PUT
 
+router.put("/reset/add/", async (req, res) => {
+    try{
+        const userId = req.userId;
+        const products = await Product.find();
+
+        await Promise.all(products.map(async product => {
+            const productId = product._id.toString();
+            
+            const itemInCar = await ShoppingCar.findOne({userId: userId, productId: productId});
+    
+            if(itemInCar !== null){
+                if(product.quantidade > 0){
+                    itemInCar.quantidade++;
+                    product.quantidade--;
+                    await itemInCar.save()
+                    await product.save()
+                }
+            }else{
+                if(product.quantidade > 0){
+                    const shoppingcar = await ShoppingCar.create({userId: userId, productId: productId, quantidade: 1});
+                    product.quantidade--;
+                    await shoppingcar.save()
+                    await product.save()
+                }
+            }
+        }))
+        
+        const shoppingcars = await ShoppingCar.find()
+        // .populate('userId').populate('productId');
+        return res.send({shoppingcars});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error updating all " + textController);
+    }
+})
+
+router.put("/reset/remove/", async (req, res) => {
+    try{
+        const userId = req.userId;
+        const productsFromShoppingCar = await ShoppingCar.find();
+
+        await Promise.all(productsFromShoppingCar.map(async productFromShoppingCar => {
+            const productId = productFromShoppingCar.productId.toString();
+            
+            const product = await Product.findById(productId);
+    
+            if((productFromShoppingCar.quantidade - 1) > 0){
+                product.quantidade++;
+                productFromShoppingCar.quantidade--;
+                await product.save()
+                await productFromShoppingCar.save()
+            }else{
+                const shoppingcar = await ShoppingCar.deleteMany({userId: userId, productId: productId});
+                product.quantidade++;
+                await product.save()
+            }
+        }))
+        
+        const shoppingcars = await ShoppingCar.find()
+        // .populate('userId').populate('productId');
+        return res.send({shoppingcars});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error updating all " + textController);
+    }
+})
+
 router.put("/remove/:productId", async (req, res) => {
     try{
         const productId = req.params.productId;
@@ -225,6 +292,37 @@ router.delete("/", async (req, res) => {
         return res.send({shoppingcars});
     }catch(error){
         return Erro(error, "Error deleting all " + textController);
+    }
+})
+
+router.delete("/all", async (req, res) => {
+    try{
+
+        const userId = req.userId;
+
+        const productsFromShoppingCar = await ShoppingCar.find();
+
+        // await ShoppingCar.deleteMany({});
+
+        await Promise.all(productsFromShoppingCar.map(async productFromShoppingCar => {
+
+            const productId = productFromShoppingCar._id.toString();
+
+            const productFormProduct = await Product.findOne({userId: userId, productId: productId});
+
+            productFormProduct.quantidade = productFromShoppingCar.quantidade;
+
+            await ShoppingCar.deleteMany({userId: userId, productId: productId})
+        
+            await productFormProduct.save()
+        }))
+        
+        const products = await ShoppingCar.find()
+        // .populate("userId").populate("productId");
+        return res.send({products});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error updating all " + textController);
     }
 })
 

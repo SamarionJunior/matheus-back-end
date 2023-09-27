@@ -21,6 +21,6 @@ const OrderSchema = new mongoose.Schema({
 //     next()
 // })
 
-const Order = mongoose.model('Group', OrderSchema);
+const Order = mongoose.model('Order', OrderSchema);
 
 export default Order;

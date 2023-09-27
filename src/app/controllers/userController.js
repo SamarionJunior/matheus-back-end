@@ -121,6 +121,30 @@ router.put("/", async (req, res) => {
     }
 })
 
+router.put("/reset", async (req, res) => {
+    try{
+
+        const usersFromClientSide = req.body;
+
+        await User.deleteMany({});
+
+        await Promise.all(usersFromClientSide.map(async userFromClientSide => {
+
+            const {name, email, password} = userFromClientSide;
+
+            const userInDataBase = await User.create({name, email, password});
+        
+            await userInDataBase.save()
+        }))
+        
+        const users = await User.find();
+        return res.send({users});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error updating all " + textController);
+    }
+})
+
 router.put("/:userId", async (req, res) => {
     try{
         const userId = req.params.userId;

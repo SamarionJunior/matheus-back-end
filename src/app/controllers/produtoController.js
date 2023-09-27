@@ -103,6 +103,30 @@ router.put("/", async (req, res) => {
     }
 })
 
+router.put("/reset", async (req, res) => {
+    try{
+
+        const productsFromClientSide = req.body;
+
+        await Product.deleteMany({});
+
+        await Promise.all(productsFromClientSide.map(async productFromClientSide => {
+
+            const {nome, preco, quantidade} = productFromClientSide;
+
+            const productInDataBase = await Product.create({nome, preco, quantidade});
+        
+            await productInDataBase.save()
+        }))
+        
+        const products = await Product.find();
+        return res.send({products});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error updating all " + textController);
+    }
+})
+
 router.put("/:productId", async (req, res) => {
     try{
         const productId = req.params.productId;
