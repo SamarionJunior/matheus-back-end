@@ -59,6 +59,32 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try{
+        const userId = req.userId;
+        const productsFromPaymentArea = await PaymentArea.find();
+            
+        const order = await Order.create({});
+        const orderId = order._id.toString();
+
+        await Promise.all(productsFromPaymentArea.map(async productFromPaymentArea => {
+            const productId = productFromPaymentArea.productId.toString();
+
+            const orders = await Orders.create({userId: userId, productId: productId, groupId: orderId, quantidade: productFromPaymentArea.quantidade});
+            await PaymentArea.deleteMany({userId: userId, productId: productId});
+            await orders.save();
+        }))
+        
+        const orders = await Orders.find();
+        // .populate('userId').populate('productId');
+        return res.send({orders});
+    }catch(error){
+        console.log(error);
+        return Erro(error, "Error updating all " + textController);
+    }
+})
+
+
+router.post("/all", async (req, res) => {
+    try{
         const idProductsFromClientSide = req.body;
         const userId = req.userId;
 

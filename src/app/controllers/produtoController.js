@@ -175,5 +175,6 @@ router.delete("/:productId", async (req, res) => {
     }
 })
 
+
 // PRODUCTS LIST
 export default app => app.use("/product", router);

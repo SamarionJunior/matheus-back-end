@@ -44,6 +44,44 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try{
+        const userId = req.userId;
+        const prdoucttoShoppingCar = await ShoppingCar.find({userId: userId});
+        const idProductsFromClientSide = prdoucttoShoppingCar.productId.toString();
+
+        await Promise.all(idProductsFromClientSide.map(async idProductFromClientSide => {
+            const { id } = idProductFromClientSide;
+        
+            const productInShoppingCar = await ShoppingCar.findOne({userId: userId, productId: id});
+            
+            const itemInPaymentArea = await PaymentArea.findOne({userId: userId, productId: id});
+            
+            if(productInShoppingCar !== null){
+                if(itemInPaymentArea !== null){
+                    if(productInShoppingCar.quantidade > 0){
+                        itemInPaymentArea.quantidade += productInShoppingCar.quantidade;
+                        await ShoppingCar.deleteMany({_id: productInShoppingCar._id.toString()});
+                        await itemInPaymentArea.save()
+                    }
+                }else{
+                    if(productInShoppingCar.quantidade > 0){
+                        const itemInPaymentArea = await PaymentArea.create({userId: userId, productId: id, quantidade: productInShoppingCar.quantidade});
+                        await ShoppingCar.deleteMany({_id: productInShoppingCar._id.toString()});
+                        await itemInPaymentArea.save()
+                    }
+                }
+
+            }
+        }))
+        
+        const itemsInPaymentArea = await PaymentArea.find().populate('userId').populate('productId');
+        return res.send({itemsInPaymentArea});
+    }catch(error){
+        return Erro(error, "Error posting all " + textController);
+    }
+})
+
+router.post("/all", async (req, res) => {
+    try{
         const idProductsFromClientSide = req.body;
         const userId = req.userId;
 
