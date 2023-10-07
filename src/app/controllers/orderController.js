@@ -32,28 +32,37 @@ router.use(async (_req, res, next) => {
 
 router.get("/", async (req, res) => {
     try{
-        
-        const orderproducts = await Order.find();
-        const orderproductsid = orderproducts.map(orderproduct => orderproduct._id.toString());
-        
-        const orders = [];
-        // const a = {a:0};
-        
-        await Promise.all(orderproductsid.map(async orderproductid => {
-            const orderAux = await Orders.find({groupId: orderproductid})
-            console.log(orderproductid)
-            console.log(orderAux)
-            // orders[orderproductid] = orderAux;
-            // const aux = a.a;
-            orders.push({[orderproductid]: orderAux});
-            // a.a++;
-        }));
-        // .populate('userId').populate('productId');
-        return res.send({orders});
+        const order = await Orders.find().populate('userId').populate('productId').populate("groupId")
+        // .sort({date: -1})
+        // .populate('userId').populate('productId').populate("groupId");
+        return res.send({order});
     }catch(error){
         return Erro(error, "Error getting all " + textController);
     }
 })
+
+// router.get("/", async (req, res) => {
+//     try{
+        
+//         const orderproducts = await Order.find();
+//         const orderproductsid = orderproducts.map(orderproduct => orderproduct._id.toString());
+        
+//         const orders = [];
+//         // const a = {a:0};
+        
+//         await Promise.all(orderproductsid.map(async orderproductid => {
+//             const orderAux = await Orders.find({groupId: orderproductid})
+//             // orders[orderproductid] = orderAux;
+//             // const aux = a.a;
+//             orders.push({[orderproductid]: orderAux});
+//             // a.a++;
+//         }));
+//         // .populate('userId').populate('productId');
+//         return res.send({orders});
+//     }catch(error){
+//         return Erro(error, "Error getting all " + textController);
+//     }
+// })
 
 // POST
 
@@ -62,8 +71,8 @@ router.post("/", async (req, res) => {
         const userId = req.userId;
         const productsFromPaymentArea = await PaymentArea.find();
             
-        const order = await Order.create({});
-        const orderId = order._id.toString();
+        const orderss = await Order.create({});
+        const orderId = orderss._id.toString();
 
         await Promise.all(productsFromPaymentArea.map(async productFromPaymentArea => {
             const productId = productFromPaymentArea.productId.toString();
@@ -73,11 +82,9 @@ router.post("/", async (req, res) => {
             await orders.save();
         }))
         
-        const orders = await Orders.find();
-        // .populate('userId').populate('productId');
-        return res.send({orders});
+        const order = await Orders.find().populate('userId').populate('productId').populate("groupId");
+        return res.send({order});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating all " + textController);
     }
 })
@@ -134,11 +141,10 @@ router.put("/status", async (req, res) => {
             await order.save();
         });
         
-        const order = await Order.find();
+        const order = await Orders.find().populate('userId').populate('productId').populate("groupId")
         // .populate('userId').populate('productId');
         return res.send({order});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating all " + textController);
     }
 })
@@ -163,7 +169,6 @@ router.put("/reset", async (req, res) => {
         // .populate('userId').populate('productId');
         return res.send({orders});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating all " + textController);
     }
 })
@@ -176,24 +181,30 @@ router.delete("/", async (req, res) => {
         const userId = req.userId;
         // const productsFromOrders = await Orders.find();
         
-        await Orders.find()
+        await Orders.find({userId: userId})
             .then(async orders => {
-                await Promise.all(orders.map(async order => {
-                    await Product.findById(order.productId.toString())
-                        .then(async product => {
-                            product.quantidade += order.quantidade;
-                            await product.save();
-                        });
-                }))
+                if(orders !== null && orders?.length !== 0){
+                    await Promise.all(orders.map(async order => {
+                        if(order !== null && order?.length !== 0){
+                            await Product.findById(order.productId.toString())
+                                .then(async product => {
+                                    if(product !== null && product?.length !== 0){
+                                        product.quantidade += order.quantidade;
+                                        await product.save();
+                                    }
+                                });
+                        }
+                    }))
+                }
             });
 
-        await Order.deleteMany({});
+        await Order.deleteMany({userId: userId});
 
-        await Orders.deleteMany({});
+        await Orders.deleteMany({userId: userId});
 
-        const orderss = await Orders.find()
+        const order = await Orders.find({userId: userId})
         // .populate('userId').populate('productId');
-        return res.send({orderss});
+        return res.send({order});
     }catch(error){
         return Erro(error, "Error deleting all " + textController);
     }

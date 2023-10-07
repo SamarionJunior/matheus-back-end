@@ -68,7 +68,6 @@ router.post("/", async (req, res) => {
         const users = await User.find();
         return res.send({users});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error posting all " + textController);
 
     }
@@ -90,7 +89,6 @@ router.post("/all", async (req, res) => {
         const users = await User.find();
         return res.send({users});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error posting " + textController + " by id");
 
     }
@@ -115,7 +113,6 @@ router.put("/", async (req, res) => {
         const users = await User.find();
         return res.send({users});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating all " + textController);
 
     }
@@ -140,7 +137,6 @@ router.put("/reset", async (req, res) => {
         const users = await User.find();
         return res.send({users});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating all " + textController);
     }
 })
@@ -156,7 +152,6 @@ router.put("/:userId", async (req, res) => {
         const users = await User.find();
         return res.send({users});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating " + textController + " by id");
 
     }
@@ -172,7 +167,6 @@ router.delete("/", async (req, res) => {
         const users = await User.find();
         return res.send({users});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error deleting all " + textController);
 
     }
@@ -187,7 +181,6 @@ router.delete("/:userId", async (req, res) => {
         const users = await User.find();
         return res.send({users});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error deleting " + textController + " by id");
 
     }

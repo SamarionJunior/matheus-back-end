@@ -30,6 +30,7 @@ router.get("/:productId", async (req, res) => {
     try{
         const productId = req.params.productId;
 
+        
         const product = await Product.findById(productId);
         return res.send({product});
     }catch(error){
@@ -50,7 +51,6 @@ router.post("/", async (req, res) => {
         const products = await Product.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error posting all " + textController);
 
     }
@@ -72,7 +72,6 @@ router.post("/all", async (req, res) => {
         const products = await Product.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error posting " + textController + " by id");
 
     }
@@ -97,7 +96,6 @@ router.put("/", async (req, res) => {
         const products = await Product.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating all " + textController);
 
     }
@@ -122,7 +120,6 @@ router.put("/reset", async (req, res) => {
         const products = await Product.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating all " + textController);
     }
 })
@@ -138,7 +135,6 @@ router.put("/:productId", async (req, res) => {
         const products = await Product.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating " + textController + " by id");
 
     }
@@ -154,7 +150,6 @@ router.delete("/", async (req, res) => {
         const products = await Product.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error deleting all " + textController);
 
     }
@@ -169,7 +164,6 @@ router.delete("/:productId", async (req, res) => {
         const products = await Product.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error deleting " + textController + " by id");
 
     }

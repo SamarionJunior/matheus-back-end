@@ -32,9 +32,9 @@ router.use(async (_req, res, next) => {
 
 router.get("/", async (req, res) => {
     try{
-        const productsInPaymentarea = await PaymentArea.find()
-        // .populate('userId').populate('productId');
-        return res.send({productsInPaymentarea});
+        const paymentareas = await PaymentArea.find()
+        .populate('userId').populate('productId');
+        return res.send({paymentareas});
     }catch(error){
         return Erro(error, "Error getting all " + textController);
     }
@@ -44,37 +44,61 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try{
-        const userId = req.userId;
-        const prdoucttoShoppingCar = await ShoppingCar.find({userId: userId});
-        const idProductsFromClientSide = prdoucttoShoppingCar.productId.toString();
+        // const userId = req.userId;
+        // const prdoucttoShoppingCar = await ShoppingCar.find({userId: userId});
+        // const idProductsFromClientSide = prdoucttoShoppingCar.map(p => p.productId.toString());
 
-        await Promise.all(idProductsFromClientSide.map(async idProductFromClientSide => {
-            const { id } = idProductFromClientSide;
+        // await Promise.all(idProductsFromClientSide.map(async idProductFromClientSide => {
+        //     const { id } = idProductFromClientSide;
         
-            const productInShoppingCar = await ShoppingCar.findOne({userId: userId, productId: id});
+        //     const productInShoppingCar = await ShoppingCar.findOne({userId: userId, productId: id});
             
-            const itemInPaymentArea = await PaymentArea.findOne({userId: userId, productId: id});
+        //     const itemInPaymentArea = await PaymentArea.findOne({userId: userId, productId: id});
             
-            if(productInShoppingCar !== null){
-                if(itemInPaymentArea !== null){
-                    if(productInShoppingCar.quantidade > 0){
-                        itemInPaymentArea.quantidade += productInShoppingCar.quantidade;
-                        await ShoppingCar.deleteMany({_id: productInShoppingCar._id.toString()});
-                        await itemInPaymentArea.save()
-                    }
-                }else{
-                    if(productInShoppingCar.quantidade > 0){
-                        const itemInPaymentArea = await PaymentArea.create({userId: userId, productId: id, quantidade: productInShoppingCar.quantidade});
-                        await ShoppingCar.deleteMany({_id: productInShoppingCar._id.toString()});
-                        await itemInPaymentArea.save()
-                    }
-                }
+        //     if(productInShoppingCar !== null){
+        //         if(itemInPaymentArea !== null){
+        //             if(productInShoppingCar.quantidade > 0){
+        //                 itemInPaymentArea.quantidade += productInShoppingCar.quantidade;
+        //                 await ShoppingCar.deleteMany({_id: productInShoppingCar._id.toString()});
+        //                 await itemInPaymentArea.save()
+        //             }
+        //         }else{
+        //             if(productInShoppingCar.quantidade > 0){
+        //                 const itemInPaymentArea = await PaymentArea.create({userId: userId, productId: id, quantidade: productInShoppingCar.quantidade});
+        //                 await ShoppingCar.deleteMany({_id: productInShoppingCar._id.toString()});
+        //                 await itemInPaymentArea.save()
+        //             }
+        //         }
 
+        //     }
+        // }))
+        
+        // const itemsInPaymentArea = await PaymentArea.find().populate('userId').populate('productId');
+        // return res.send({itemsInPaymentArea});
+
+        
+        const userId = req.userId;
+        const productsFromShoppingCar = await ShoppingCar.find();
+
+        await Promise.all(productsFromShoppingCar.map(async productFromShoppingCar => {
+            const productId = productFromShoppingCar.productId.toString();
+            
+            const itemFromPaymentArea = await PaymentArea.findOne({userId: userId, productId: productId});
+    
+            if(itemFromPaymentArea !== null){
+                itemFromPaymentArea.quantidade += productFromShoppingCar.quantidade;
+                await ShoppingCar.deleteMany({userId: userId, productId: productId});
+                await itemFromPaymentArea.save()
+            }else{
+                const paymentarea = await PaymentArea.create({userId: userId, productId: productId, quantidade: productFromShoppingCar.quantidade});
+                await ShoppingCar.deleteMany({userId: userId, productId: productId});
+                await paymentarea.save()
             }
         }))
         
-        const itemsInPaymentArea = await PaymentArea.find().populate('userId').populate('productId');
-        return res.send({itemsInPaymentArea});
+        const paymentareas = await PaymentArea.find()
+        .populate('userId').populate('productId');
+        return res.send({paymentareas});
     }catch(error){
         return Erro(error, "Error posting all " + textController);
     }
@@ -144,7 +168,6 @@ router.put("/reset", async (req, res) => {
         // .populate('userId').populate('productId');
         return res.send({paymentareas});
     }catch(error){
-        console.log(error);
         return Erro(error, "Error updating all " + textController);
     }
 })

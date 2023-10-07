@@ -35,7 +35,7 @@ router.get("/", async (req, res) => {
         const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        return Erro(error, "Error getting all " + textController);
+        return Erro(error, "Error getting all " + textController, res);
     }
 })
 
@@ -46,7 +46,7 @@ router.get("/shoppingCarId/:shoppingCarId", async (req, res) => {
         const itemInCar = await ShoppingCar.find({_id: shoppingCarId}).populate('userId').populate('productId');
         return res.send({itemInCar});
     }catch(error){
-        return Erro(error, "Error getting " + textController + " by id");
+        return Erro(error, "Error getting " + textController + " by id", res);
     }
 })
 
@@ -57,7 +57,7 @@ router.get("/userId/:userId", async (req, res) => {
         const itemInCar = await ShoppingCar.find({ userId: userId}).populate('userId').populate('productId');
         return res.send({itemInCar});
     }catch(error){
-        return Erro(error, "Error getting " + textController + " by id");
+        return Erro(error, "Error getting " + textController + " by id", res);
     }
 })
 
@@ -68,7 +68,7 @@ router.get("/productId/:productId", async (req, res) => {
         const itemInCar = await ShoppingCar.find({ productId: productId}).populate('userId').populate('productId');
         return res.send({itemInCar});
     }catch(error){
-        return Erro(error, "Error getting " + textController + " by id");
+        return Erro(error, "Error getting " + textController + " by id", res);
     }
 })
 
@@ -80,7 +80,7 @@ router.get("/:productId", async (req, res) => {
         const itemInCar = await ShoppingCar.find({userId: userId, productId: productId}).populate('userId').populate('productId');
         return res.send({itemInCar});
     }catch(error){
-        return Erro(error, "Error getting " + textController + " by id");
+        return Erro(error, "Error getting " + textController + " by id", res);
     }
 })
 
@@ -118,7 +118,7 @@ router.post("/all", async (req, res) => {
         const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        return Erro(error, "Error posting all " + textController);
+        return Erro(error, "Error posting all " + textController, res);
     }
 })
 
@@ -150,7 +150,7 @@ router.post("/:productId", async (req, res) => {
         const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        return Erro(error, "Error posting " + textController + " by id");
+        return Erro(error, "Error posting " + textController + " by id", res);
     }
 })
 
@@ -187,8 +187,7 @@ router.put("/reset/add/", async (req, res) => {
         // .populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        console.log(error);
-        return Erro(error, "Error updating all " + textController);
+        return Erro(error, "Error updating all " + textController, res);
     }
 })
 
@@ -218,8 +217,7 @@ router.put("/reset/remove/", async (req, res) => {
         // .populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        console.log(error);
-        return Erro(error, "Error updating all " + textController);
+        return Erro(error, "Error updating all " + textController, res);
     }
 })
 
@@ -229,28 +227,28 @@ router.put("/remove/:productId", async (req, res) => {
         const userId = req.userId;
 
         const itemInCar = await ShoppingCar.findOne({userId: userId, productId: productId});
-        
-        if(product){
-            if(itemInCar.quantidade > 0){
 
-                const product = await Product.findById(productId);
+        const product = await Product.findById(productId);
         
+        if(itemInCar !== null){
+            if(itemInCar.quantidade > 1){
                 itemInCar.quantidade--;
                 product.quantidade++;
-        
                 await itemInCar.save();
+                await product.save();
+
+            }else{
+                await ShoppingCar.deleteMany({_id: itemInCar._id.toString()})
+                product.quantidade++;
                 await product.save();
             }
         }
-
-        if(itemInCar.quantidade === 0){
-            await ShoppingCar.findByIdAndRemove({_id: itemInCar._id.toString()});
-        }
         
-        const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
+        const shoppingcars = await ShoppingCar.find()
+        .populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        return Erro(error, "Error updating " + textController + " by id");
+        return Erro(error, "Error updating " + textController + " by id", res);
     }
 })
 
@@ -260,42 +258,49 @@ router.put("/add/:productId", async (req, res) => {
         const userId = req.userId;
 
         const product = await Product.findById(productId);
-
-        if(product){
-            if(product.quantidade > 0){
     
-                const itemInCar = await ShoppingCar.findOne({userId: userId, productId: productId});
-        
-                itemInCar.quantidade++;
-                product.quantidade--;
-        
-                await itemInCar.save();
-                await product.save();
+        const itemInCar = await ShoppingCar.findOne({userId: userId, productId: productId});
+
+        if(product !== null){
+            if(product.quantidade > 0){
+                if(itemInCar !== null){
+                    itemInCar.quantidade++;
+                    product.quantidade--;
+                    await itemInCar.save();
+                    await product.save();
+                }else{
+                    const shoppingcar = await ShoppingCar.create({userId: userId, productId: productId, quantidade: 1});
+                    product.quantidade--;
+                    await shoppingcar.save();
+                    await product.save();
+                }
             }
         }
+
         
-        const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
+        const shoppingcars = await ShoppingCar.find()
+        .populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        return Erro(error, "Error updating " + textController + " by id");
+        return Erro(error, "Error updating " + textController + " by id", res);
     }
 })
 
 // DELETE
 
-router.delete("/", async (req, res) => {
-    try{
+// router.delete("/", async (req, res) => {
+//     try{
 
-        const shoppingcar = await ShoppingCar.deleteMany({});
+//         const shoppingcar = await ShoppingCar.deleteMany({});
         
-        const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
-        return res.send({shoppingcars});
-    }catch(error){
-        return Erro(error, "Error deleting all " + textController);
-    }
-})
+//         const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
+//         return res.send({shoppingcars});
+//     }catch(error){
+//         return Erro(error, "Error deleting all " + textController, res);
+//     }
+// })
 
-router.delete("/all", async (req, res) => {
+router.delete("/", async (req, res) => {
     try{
 
         const userId = req.userId;
@@ -306,23 +311,23 @@ router.delete("/all", async (req, res) => {
 
         await Promise.all(productsFromShoppingCar.map(async productFromShoppingCar => {
 
-            const productId = productFromShoppingCar._id.toString();
+            const productId = productFromShoppingCar.productId.toString();
+            const shoppingcarId = productFromShoppingCar._id.toString();
 
-            const productFormProduct = await Product.findOne({userId: userId, productId: productId});
+            const productFormProduct = await Product.findById(productId);
 
-            productFormProduct.quantidade = productFromShoppingCar.quantidade;
+            productFormProduct.quantidade += productFromShoppingCar.quantidade;
 
-            await ShoppingCar.deleteMany({userId: userId, productId: productId})
+            await ShoppingCar.deleteMany({_id: shoppingcarId})
         
             await productFormProduct.save()
         }))
         
-        const products = await ShoppingCar.find()
-        // .populate("userId").populate("productId");
-        return res.send({products});
+        const shoppingcars = await ShoppingCar.find()
+        .populate("userId").populate("productId");
+        return res.send({shoppingcars});
     }catch(error){
-        console.log(error);
-        return Erro(error, "Error updating all " + textController);
+        return Erro(error, "Error updating all " + textController, res);
     }
 })
 
@@ -335,7 +340,7 @@ router.delete("/shoppingcarId/:shoppingcarId", async (req, res) => {
         const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        return Erro(error, "Error deleting " + textController + " by id");
+        return Erro(error, "Error deleting " + textController + " by id", res);
     }
 })
 
@@ -348,7 +353,7 @@ router.delete("/userId/:userId", async (req, res) => {
         const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        return Erro(error, "Error deleting " + textController + " by id");
+        return Erro(error, "Error deleting " + textController + " by id", res);
     }
 })
 
@@ -361,7 +366,7 @@ router.delete("/productId/:productId", async (req, res) => {
         const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        return Erro(error, "Error deleting " + textController + " by id");
+        return Erro(error, "Error deleting " + textController + " by id", res);
     }
 })
 
@@ -370,12 +375,26 @@ router.delete("/:productId", async (req, res) => {
         const productId = req.params.productId;
         const userId = req.userId;
 
-        const shoppingcar = await ShoppingCar.findOneAndRemove({userId: userId, productId: productId});
+        const shoppingcar = await ShoppingCar.findOne({userId: userId, productId: productId});
+
+        const product = await Product.findById(productId);
+
+        if(shoppingcar !== null){
+            const shoppingcarId = shoppingcar._id.toString()
+            if(product !== null){
+
+                product.quantidade += shoppingcar.quantidade;
+        
+                await ShoppingCar.deleteMany({_id: shoppingcarId});
+
+                product.save()
+            }
+        }
         
         const shoppingcars = await ShoppingCar.find().populate('userId').populate('productId');
         return res.send({shoppingcars});
     }catch(error){
-        return Erro(error, "Error deleting " + textController + " by id");
+        return Erro(error, "Error deleting " + textController + " by id", res);
     }
 })
 

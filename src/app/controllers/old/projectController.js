@@ -109,11 +109,8 @@ router.delete("/:projectId", async (req, res) => {
         
         const projects = await Project.find().populate("user");
         
-        console.log("oi");
         return res.send({projects});
     }catch(error){
-        console.log(error);
-        console.log("oi");
         return res.status(400).send({erro: "Error loading  project"})
     }
 })

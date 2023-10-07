@@ -200,7 +200,6 @@ router.put("/orders/status/:produtoId", async (req, res) => {
 
         return res.send({products});
     }catch(error){
-        console.log(error);
         return res.status(400).send({erro: "Error updating produto"});
     }
 })
@@ -217,7 +216,6 @@ router.post("/", async (req, res) => {
         const products = await Produto.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return res.status(400).send({erro: "Error creating new produto"})
 
     }
@@ -233,7 +231,6 @@ router.put("/:produtoId", async (req, res) => {
         const products = await Produto.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return res.status(400).send({erro: "Error creating new produto"})
 
     }
@@ -248,7 +245,6 @@ router.delete("/:produtoId", async (req, res) => {
         const products = await Produto.find();
         return res.send({products});
     }catch(error){
-        console.log(error);
         return res.status(400).send({erro: "Error creating new produto"})
 
     }
