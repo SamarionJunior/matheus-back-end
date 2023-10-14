@@ -3,18 +3,18 @@ import bodyParser from "body-parser"
 
 // console.clear()
 
-const PORT = 3030
+const PORT = process.env.PORT || 3030
 
 const app = express()
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 
-import produtoController from "./app/controllers/produtoController.js";
-import userController from "./app/controllers/userController.js";
-import shoppingcarController from "./app/controllers/shoppingcarController.js";
-import paymentAreaController from "./app/controllers/paymentAreaController.js";
-import orderController from "./app/controllers/orderController.js";
+import produtoController from "./src/app/controllers/produtoController.js";
+import userController from "./src/app/controllers/userController.js";
+import shoppingcarController from "./src/app/controllers/shoppingcarController.js";
+import paymentAreaController from "./src/app/controllers/paymentAreaController.js";
+import orderController from "./src/app/controllers/orderController.js";
 
 produtoController(app)
 userController(app)
@@ -25,6 +25,7 @@ orderController(app)
 app.listen(PORT)
 
 export default app
+
 
 // import hbs from "nodemailer-express-handlebars";
 
