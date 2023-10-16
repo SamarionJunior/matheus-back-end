@@ -10,17 +10,17 @@ const app = express()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 
-// import produtoController from "./src/app/controllers/produtoController.js";
-// import userController from "./src/app/controllers/userController.js";
-// import shoppingcarController from "./src/app/controllers/shoppingcarController.js";
-// import paymentAreaController from "./src/app/controllers/paymentAreaController.js";
-// import orderController from "./src/app/controllers/orderController.js";
+import produtoController from "./src/app/controllers/produtoController.js";
+import userController from "./src/app/controllers/userController.js";
+import shoppingcarController from "./src/app/controllers/shoppingcarController.js";
+import paymentAreaController from "./src/app/controllers/paymentAreaController.js";
+import orderController from "./src/app/controllers/orderController.js";
 
-// produtoController(app)
-// userController(app)
-// shoppingcarController(app)
-// paymentAreaController(app)
-// orderController(app)
+produtoController(app)
+userController(app)
+shoppingcarController(app)
+paymentAreaController(app)
+orderController(app)
 
 import testController from "./src/app/controllers/testController.js"
 
