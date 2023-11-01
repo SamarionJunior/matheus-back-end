@@ -183,7 +183,7 @@ router.delete("/", async (req, res) => {
             const productId = productFromPaymentArea.productId.toString();
             
             const itemFromShoppingCar = await ShoppingCar.findOne({userId: userId, productId: productId});
-    
+                        
             if(itemFromShoppingCar !== null){
                 itemFromShoppingCar.quantidade += productFromPaymentArea.quantidade;
                 await PaymentArea.deleteMany({userId: userId, productId: productId});

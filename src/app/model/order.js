@@ -12,7 +12,20 @@ const OrderSchema = new mongoose.Schema({
         type: Date,
         require: true,
         default: Date.now,
-    }
+    },
+    contact: {
+        type: String,
+    },
+    tipoDePagamento: {
+        type: String,
+    },
+    troco: {
+        type: String,
+    },
+    addressId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Address',
+    },
 }, { collection : 'Order' });
 
 // UserSchema.pre("save", async function(next){
